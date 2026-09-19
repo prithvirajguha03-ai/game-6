@@ -85,60 +85,80 @@
 
   <main class="w-full max-w-4xl flex flex-col items-center gap-5 select-none">
 
-    <header class="text-center">
-      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Find the Difference</h1>
-      <p class="mt-2 text-sm sm:text-base text-slate-500 max-w-xl">
-        Look closely at the two pictures and find all <span id="totalHint" class="font-semibold text-slate-700">6</span> differences.
-        Tap a difference on either picture to mark it.
-      </p>
-    </header>
+    <div id="difficultyRoot" class="w-full"></div>
 
-    <div class="w-full rounded-2xl bg-white/80 backdrop-blur ring-1 ring-slate-900/5 shadow-sm px-4 sm:px-6 py-3">
-      <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div class="flex items-baseline gap-1 font-semibold whitespace-nowrap">
-          <span id="foundCount" class="text-2xl text-emerald-600">0</span>
-          <span class="text-lg text-slate-400">/</span>
-          <span id="totalCount" class="text-2xl text-slate-700">6</span>
-          <span class="ml-1 text-sm text-slate-500">found</span>
+    <div id="gameScreen" class="hidden flex w-full flex-col items-center gap-5">
+      <header class="text-center">
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Find the Difference</h1>
+        <p class="mt-2 text-sm sm:text-base text-slate-500 max-w-xl">
+          Look closely at the two pictures and find all <span id="totalHint" class="font-semibold text-slate-700">6</span> differences.
+          Tap a difference on either picture to mark it.
+        </p>
+      </header>
+
+      <div class="w-full rounded-2xl bg-white/80 backdrop-blur ring-1 ring-slate-900/5 shadow-sm px-4 sm:px-6 py-3">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div class="flex items-baseline gap-1 font-semibold whitespace-nowrap">
+            <span id="foundCount" class="text-2xl text-emerald-600">0</span>
+            <span class="text-lg text-slate-400">/</span>
+            <span id="totalCount" class="text-2xl text-slate-700">6</span>
+            <span class="ml-1 text-sm text-slate-500">found</span>
+          </div>
+
+          <div class="flex-1 min-w-[120px] h-3 rounded-full bg-slate-200 overflow-hidden" aria-hidden="true">
+            <div id="progressBar" class="h-full rounded-full bg-linear-to-r from-emerald-400 to-emerald-600 transition-all duration-500" style="width: 0%"></div>
+          </div>
+
+          <div class="whitespace-nowrap text-sm font-medium text-slate-600">
+            Mistakes: <span id="mistakeCount" class="inline-block font-bold text-rose-500">0</span>
+          </div>
+
+          <div class="rounded-full bg-slate-100 ring-1 ring-slate-200 px-3 py-1 text-sm font-semibold text-slate-600 whitespace-nowrap">
+            Level: <span id="difficultyBadge" class="inline-block font-bold text-slate-900">Normal</span>
+          </div>
+
+          <button id="changeDifficultyBtn" type="button"
+            class="rounded-full bg-white ring-1 ring-slate-300 text-slate-600 text-sm font-semibold px-4 py-2 transition hover:bg-slate-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2">
+            Change difficulty
+          </button>
+
+          <button id="restartBtn" type="button"
+            class="rounded-full bg-slate-800 text-white text-sm font-semibold px-4 py-2 transition hover:bg-slate-700 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2">
+            Restart
+          </button>
         </div>
-
-        <div class="flex-1 min-w-[120px] h-3 rounded-full bg-slate-200 overflow-hidden" aria-hidden="true">
-          <div id="progressBar" class="h-full rounded-full bg-linear-to-r from-emerald-400 to-emerald-600 transition-all duration-500" style="width: 0%"></div>
-        </div>
-
-        <div class="whitespace-nowrap text-sm font-medium text-slate-600">
-          Mistakes: <span id="mistakeCount" class="inline-block font-bold text-rose-500">0</span>
-        </div>
-
-        <button id="restartBtn" type="button"
-          class="rounded-full bg-slate-800 text-white text-sm font-semibold px-4 py-2 transition hover:bg-slate-700 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2">
-          Restart
-        </button>
       </div>
-    </div>
 
-    <section class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-      <figure class="flex flex-col gap-2">
-        <figcaption class="text-xs font-semibold uppercase tracking-wide text-slate-500">Picture 1</figcaption>
-        <div id="panelA" class="svg-panel ring-1 ring-slate-900/10 shadow-lg"></div>
-      </figure>
-      <figure class="flex flex-col gap-2">
-        <figcaption class="text-xs font-semibold uppercase tracking-wide text-slate-500">Picture 2</figcaption>
-        <div id="panelB" class="svg-panel ring-1 ring-slate-900/10 shadow-lg"></div>
-      </figure>
-    </section>
+      <section class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+        <figure class="flex flex-col gap-2">
+          <figcaption class="text-xs font-semibold uppercase tracking-wide text-slate-500">Picture 1</figcaption>
+          <div id="panelA" class="svg-panel ring-1 ring-slate-900/10 shadow-lg"></div>
+        </figure>
+        <figure class="flex flex-col gap-2">
+          <figcaption class="text-xs font-semibold uppercase tracking-wide text-slate-500">Picture 2</figcaption>
+          <div id="panelB" class="svg-panel ring-1 ring-slate-900/10 shadow-lg"></div>
+        </figure>
+      </section>
 
-    <div id="message" class="hidden w-full max-w-md text-center rounded-2xl bg-white ring-1 ring-slate-900/10 shadow-xl px-8 py-6">
-      <h2 class="text-xl font-extrabold text-slate-900">All differences found!</h2>
-      <p id="resultStats" class="mt-1 text-sm text-slate-500"></p>
-      <button id="playAgainBtn" type="button"
-        class="mt-4 rounded-full bg-emerald-600 text-white text-sm font-semibold px-5 py-2 transition hover:bg-emerald-500 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
-        Play Again
-      </button>
+      <div id="message" class="hidden w-full max-w-md text-center rounded-2xl bg-white ring-1 ring-slate-900/10 shadow-xl px-8 py-6">
+        <h2 class="text-xl font-extrabold text-slate-900">All differences found!</h2>
+        <p id="resultStats" class="mt-1 text-sm text-slate-500"></p>
+        <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+          <button id="playAgainBtn" type="button"
+            class="rounded-full bg-emerald-600 text-white text-sm font-semibold px-5 py-2 transition hover:bg-emerald-500 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
+            Play Again
+          </button>
+          <button id="changeResultBtn" type="button"
+            class="rounded-full bg-white ring-1 ring-slate-300 text-slate-700 text-sm font-semibold px-5 py-2 transition hover:bg-slate-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2">
+            Change difficulty
+          </button>
+        </div>
+      </div>
     </div>
 
   </main>
 
+  <script src="./src/difficulty.js"></script>
   <script src="./src/game.js"></script>
 </body>
 </html>

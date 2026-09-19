@@ -1,16 +1,44 @@
 (function () {
   'use strict';
 
+  var DIFFICULTY_CONFIG = {
+    easy:   { label: 'Easy',   total: 4, radiusScale: 1.4 },
+    normal: { label: 'Normal', total: 6, radiusScale: 1.0 },
+    hard:   { label: 'Hard',   total: 8, radiusScale: 0.75 }
+  };
+
   var DIFFERENCES = [
     { label: 'The sun',    x: 255, y: 40,  r: 30 },
-    { label: 'A cloud',    x: 170, y: 22,  r: 20 },
-    { label: 'A bird',     x: 124, y: 52,  r: 18 },
-    { label: 'The window', x: 156, y: 97,  w: 24, h: 20 },
-    { label: 'The apples', x: 42,  y: 90,  r: 24 },
-    { label: 'A flower',   x: 262, y: 139, r: 18 }
+    { label: 'A cloud',    x: 170, y: 22,  r: 20,
+      a: '<g fill="#ffffff" opacity="0.95"><rect x="152" y="21" width="36" height="6" rx="3"/>' +
+         '<circle cx="170" cy="22" r="9"/><circle cx="160" cy="24" r="6"/><circle cx="180" cy="24" r="6"/></g>' },
+    { label: 'A bird',     x: 124, y: 52,  r: 18,
+      a: '<path d="M110 54 Q117 44 124 54 Q131 44 138 54" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' },
+    { label: 'The apples', x: 42,  y: 90,  r: 24,
+      a: '<circle cx="42" cy="84" r="3.2" fill="#e63946"/>' +
+         '<circle cx="52" cy="91" r="3.2" fill="#e63946"/>' +
+         '<circle cx="33" cy="93" r="3.2" fill="#e63946"/>' },
+    { label: 'The window', x: 156, y: 97,  w: 24, h: 20,
+      a: '<line x1="168" y1="100" x2="168" y2="113" stroke="#7a8ca0" stroke-width="2"/>' +
+         '<line x1="160" y1="106.5" x2="176" y2="106.5" stroke="#7a8ca0" stroke-width="2"/>' },
+    { label: 'A flower',   x: 262, y: 139, r: 18,
+      stem: '<line x1="262" y1="150" x2="262" y2="141" stroke="#2e7d32" stroke-width="2"/>',
+      a: '<circle cx="262" cy="139" r="5" fill="#e63946"/><circle cx="262" cy="139" r="1.8" fill="#fdf5df"/>' },
+    { label: 'A butterfly',x: 80,  y: 104, r: 16,
+      a: '<g transform="translate(80,104)">' +
+           '<ellipse cx="-8" cy="-2" rx="8" ry="6" fill="#fbbf24" opacity="0.95"/>' +
+           '<ellipse cx="8" cy="-2" rx="8" ry="6" fill="#fbbf24" opacity="0.95"/>' +
+           '<ellipse cx="-6" cy="5" rx="5" ry="4" fill="#f59e0b"/>' +
+           '<ellipse cx="6" cy="5" rx="5" ry="4" fill="#f59e0b"/>' +
+           '<rect x="-2" y="-8" width="4" height="12" rx="2" fill="#475569"/>' +
+         '</g>' },
+    { label: 'The fence',  x: 255, y: 178, r: 14,
+      a: '<g stroke="#a16207" stroke-linecap="round">' +
+           '<line x1="248" y1="176" x2="248" y2="190" stroke-width="3"/>' +
+           '<line x1="262" y1="176" x2="262" y2="190" stroke-width="3"/>' +
+           '<path d="M243 179 H267" fill="none" stroke="#a16207" stroke-width="2"/>' +
+         '</g>' }
   ];
-
-  var TOTAL = DIFFERENCES.length;
 
   var panelA = document.getElementById('panelA');
   var panelB = document.getElementById('panelB');
@@ -24,8 +52,19 @@
     message: document.getElementById('message'),
     stats: document.getElementById('resultStats'),
     restart: document.getElementById('restartBtn'),
-    playAgain: document.getElementById('playAgainBtn')
+    playAgain: document.getElementById('playAgainBtn'),
+    changeDifficulty: document.getElementById('changeDifficultyBtn'),
+    changeResult: document.getElementById('changeResultBtn'),
+    badge: document.getElementById('difficultyBadge')
   };
+
+  var difficultyRoot = document.getElementById('difficultyRoot');
+  var gameScreen = document.getElementById('gameScreen');
+
+  var difficulty = 'normal';
+  var activeCount = DIFFICULTY_CONFIG.normal.total;
+  var radiusScale = 1;
+  var activeDefs = [];
 
   var found = null;
   var mistakes = 0;
@@ -61,9 +100,18 @@
     var skyId = 'skyGrad-' + variant;
     var grassId = 'grassGrad-' + variant;
 
+    var hasSun = activeCount > 0 && isA;
+    var hasCloud = activeCount > 1 && isA;
+    var hasBird = activeCount > 2 && isA;
+    var hasApples = activeCount > 3 && isA;
+    var hasWindow = activeCount > 4 && isA;
+    var hasFlower = activeCount > 5 && isA;
+    var hasButterfly = activeCount > 6 && isA;
+    var hasFence = activeCount > 7 && isA;
+
     var hotspots = '';
-    for (var i = 0; i < DIFFERENCES.length; i++) {
-      hotspots += hotspotMarkup(DIFFERENCES[i], i);
+    for (var i = 0; i < activeDefs.length; i++) {
+      hotspots += hotspotMarkup(activeDefs[i], i);
     }
 
     var scene =
@@ -79,7 +127,7 @@
         '<rect x="0" y="0" width="300" height="200" fill="url(#' + skyId + ')"/>' +
 
         '<g>' +
-          (isA ? sunRays() : '') +
+          (hasSun ? sunRays() : '') +
           '<circle cx="255" cy="40" r="16" fill="' + (isA ? '#ffd23b' : '#fff3c4') + '"/>' +
         '</g>' +
 
@@ -90,18 +138,8 @@
           '<circle cx="92" cy="45" r="8"/>' +
         '</g>' +
 
-        (isA
-          ? '<g fill="#ffffff" opacity="0.95">' +
-              '<rect x="152" y="21" width="36" height="6" rx="3"/>' +
-              '<circle cx="170" cy="22" r="9"/>' +
-              '<circle cx="160" cy="24" r="6"/>' +
-              '<circle cx="180" cy="24" r="6"/>' +
-            '</g>'
-          : '') +
-
-        (isA
-          ? '<path d="M110 54 Q117 44 124 54 Q131 44 138 54" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
-          : '') +
+        (hasCloud ? DIFFERENCES[1].a : '') +
+        (hasBird ? DIFFERENCES[2].a : '') +
 
         '<rect x="0" y="148" width="300" height="52" fill="url(#' + grassId + ')"/>' +
 
@@ -109,11 +147,7 @@
         '<circle cx="34" cy="96" r="22" fill="#4e9f4f"/>' +
         '<circle cx="54" cy="96" r="20" fill="#3f8e44"/>' +
         '<circle cx="44" cy="86" r="20" fill="#58ad55"/>' +
-        (isA
-          ? '<circle cx="42" cy="84" r="3.2" fill="#e63946"/>' +
-            '<circle cx="52" cy="91" r="3.2" fill="#e63946"/>' +
-            '<circle cx="33" cy="93" r="3.2" fill="#e63946"/>'
-          : '') +
+        (hasApples ? DIFFERENCES[3].a : '') +
 
         '<polygon points="148,90 232,90 190,46" fill="#d25434"/>' +
         '<rect x="156" y="60" width="9" height="18" fill="#8c4a31"/>' +
@@ -122,10 +156,7 @@
         '<rect x="152" y="88" width="76" height="62" fill="#f5dfb8"/>' +
         '<g>' +
           '<rect x="160" y="100" width="16" height="13" fill="#b8e0f7" stroke="#7a8ca0" stroke-width="1"/>' +
-          (isA
-            ? '<line x1="168" y1="100" x2="168" y2="113" stroke="#7a8ca0" stroke-width="2"/>' +
-              '<line x1="160" y1="106.5" x2="176" y2="106.5" stroke="#7a8ca0" stroke-width="2"/>'
-            : '') +
+          (hasWindow ? DIFFERENCES[4].a : '') +
         '</g>' +
         '<rect x="182" y="122" width="15" height="28" fill="#9c6b3c"/>' +
         '<circle cx="194" cy="137" r="1.8" fill="#ffd23b"/>' +
@@ -136,14 +167,15 @@
         '<line x1="94" y1="150" x2="94" y2="144" stroke="#2e7d32" stroke-width="2"/>' +
         '<line x1="118" y1="150" x2="118" y2="136" stroke="#2e7d32" stroke-width="2"/>' +
         '<line x1="240" y1="150" x2="240" y2="142" stroke="#2e7d32" stroke-width="2"/>' +
-        (isA ? '<line x1="262" y1="150" x2="262" y2="141" stroke="#2e7d32" stroke-width="2"/>' : '') +
+        (hasFlower ? DIFFERENCES[5].stem : '') +
 
         '<circle cx="94" cy="142" r="5" fill="#e76f51"/><circle cx="94" cy="142" r="1.8" fill="#fdf5df"/>' +
         '<circle cx="118" cy="133" r="5" fill="#8e44ad"/><circle cx="118" cy="133" r="1.8" fill="#fdf5df"/>' +
         '<circle cx="240" cy="140" r="5" fill="#2a9d8f"/><circle cx="240" cy="140" r="1.8" fill="#fdf5df"/>' +
-        (isA
-          ? '<circle cx="262" cy="139" r="5" fill="#e63946"/><circle cx="262" cy="139" r="1.8" fill="#fdf5df"/>'
-          : '') +
+        (hasFlower ? DIFFERENCES[5].a : '') +
+
+        (hasButterfly ? DIFFERENCES[6].a : '') +
+        (hasFence ? DIFFERENCES[7].a : '') +
 
         hotspots +
         '<g class="js-markers"></g>' +
@@ -187,13 +219,13 @@
   function updateUI() {
     els.found.textContent = String(found.size);
     els.mistakes.textContent = String(mistakes);
-    els.progress.style.width = (found.size / TOTAL) * 100 + '%';
+    els.progress.style.width = (found.size / activeCount) * 100 + '%';
   }
 
   function addMarker(panel, id) {
     var layer = panel.querySelector('.js-markers');
     if (!layer) return;
-    layer.insertAdjacentHTML('beforeend', markerCore(DIFFERENCES[id], id));
+    layer.insertAdjacentHTML('beforeend', markerCore(activeDefs[id], id));
     var last = layer.lastElementChild;
     if (last) replay(last, 'marker-pop');
   }
@@ -227,8 +259,8 @@
     panelB.classList.add('game-done');
 
     els.stats.textContent = mistakes === 0
-      ? 'You found all ' + TOTAL + ' differences without any mistakes!'
-      : 'You found all ' + TOTAL + ' differences with ' + mistakes + ' mistake' + (mistakes === 1 ? '' : 's') + '.';
+      ? 'You found all ' + activeCount + ' differences without any mistakes!'
+      : 'You found all ' + activeCount + ' differences with ' + mistakes + ' mistake' + (mistakes === 1 ? '' : 's') + '.';
 
     els.message.classList.remove('hidden');
     replay(els.message, 'completion-appear');
@@ -239,13 +271,13 @@
     addMarker(panelA, id);
     addMarker(panelB, id);
     updateUI();
-    if (found.size === TOTAL) completeGame();
+    if (found.size === activeCount) completeGame();
   }
 
   function handleHotspot(hotspot) {
     if (done) return;
     var id = Number(hotspot.getAttribute('data-id'));
-    if (!isFinite(id) || id < 0 || id >= TOTAL) return;
+    if (!isFinite(id) || id < 0 || id >= activeCount) return;
     if (found.has(id)) {
       bumpMarker(id);
       return;
@@ -279,7 +311,20 @@
     handleHotspot(hotspot);
   }
 
+  function buildActiveDefs() {
+    activeDefs = [];
+    for (var i = 0; i < activeCount; i++) {
+      var d = DIFFERENCES[i];
+      var copy = { label: d.label, x: d.x, y: d.y, a: d.a, stem: d.stem };
+      if (d.r) copy.r = d.r * radiusScale;
+      if (d.w) { copy.w = d.w; copy.h = d.h; }
+      activeDefs.push(copy);
+    }
+  }
+
   function resetGame() {
+    clearTimeout(flashTimers.A);
+    clearTimeout(flashTimers.B);
     done = false;
     mistakes = 0;
     found = new Set();
@@ -290,15 +335,58 @@
     panelB.classList.remove('game-done', 'mistake-flash');
   }
 
+  function showDifficultyScreen() {
+    gameScreen.classList.add('hidden');
+    difficultyRoot.classList.remove('hidden');
+    if (!selector) {
+      selector = window.GameDifficulty.buildScreen(difficultyRoot, {
+        title: 'Find the Difference',
+        kicker: 'Daily brain activity',
+        subtitle: 'Spot what is different between the two pictures. First, choose how challenging today\u2019s activity should be, then press Start when you are ready.',
+        descriptions: {
+          easy: 'A relaxed pace with fewer things to spot',
+          normal: 'A balanced, comfortable challenge',
+          hard: 'More differences and smaller targets to find'
+        },
+        onStart: beginGame,
+        onBack: function () {
+          if (window.history.length > 1) {
+            window.history.back();
+          }
+        }
+      });
+    } else {
+      selector.setValue(difficulty);
+    }
+  }
+
+  function beginGame(level) {
+    difficulty = window.GameDifficulty.normalize(level);
+    var cfg = DIFFICULTY_CONFIG[difficulty];
+    activeCount = cfg.total;
+    radiusScale = cfg.radiusScale;
+    buildActiveDefs();
+
+    els.total.textContent = String(activeCount);
+    els.totalHint.textContent = String(activeCount);
+    els.badge.textContent = cfg.label;
+
+    difficultyRoot.classList.add('hidden');
+    gameScreen.classList.remove('hidden');
+
+    resetGame();
+  }
+
+  var selector = null;
+
   els.restart.addEventListener('click', resetGame);
   els.playAgain.addEventListener('click', resetGame);
+  els.changeDifficulty.addEventListener('click', showDifficultyScreen);
+  els.changeResult.addEventListener('click', showDifficultyScreen);
   panelA.addEventListener('click', onPanelClick);
   panelB.addEventListener('click', onPanelClick);
   panelA.addEventListener('keydown', onPanelKeydown);
   panelB.addEventListener('keydown', onPanelKeydown);
 
-  els.total.textContent = String(TOTAL);
-  els.totalHint.textContent = String(TOTAL);
-
-  resetGame();
+  showDifficultyScreen();
 })();

@@ -337,12 +337,11 @@
 
   function showDifficultyScreen() {
     gameScreen.classList.add('hidden');
-    difficultyRoot.classList.remove('hidden');
     if (!selector) {
       selector = window.GameDifficulty.buildScreen(difficultyRoot, {
-        title: 'Find the Difference',
-        kicker: 'Daily brain activity',
-        subtitle: 'Spot what is different between the two pictures. First, choose how challenging today\u2019s activity should be, then press Start when you are ready.',
+        eyebrow: 'Find the Difference',
+        title: 'Choose Your Difficulty',
+        intro: 'Spot what is different between the two pictures. First, choose how challenging today\u2019s activity should be, then press Start when you are ready.',
         descriptions: {
           easy: 'A relaxed pace with fewer things to spot',
           normal: 'A balanced, comfortable challenge',
@@ -358,6 +357,7 @@
     } else {
       selector.setValue(difficulty);
     }
+    selector.show();
   }
 
   function beginGame(level) {
@@ -371,7 +371,7 @@
     els.totalHint.textContent = String(activeCount);
     els.badge.textContent = cfg.label;
 
-    difficultyRoot.classList.add('hidden');
+    if (selector) selector.hide();
     gameScreen.classList.remove('hidden');
 
     resetGame();

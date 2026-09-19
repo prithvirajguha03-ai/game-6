@@ -2,45 +2,31 @@
   'use strict';
 
   var LEVELS = [
-    {
-      id: 'easy',
-      acronym: 'EASY',
-      label: 'Easy',
-      description: 'A relaxed, gentle challenge'
-    },
-    {
-      id: 'normal',
-      acronym: 'NORMAL',
-      label: 'Normal',
-      description: 'Balanced and comfortable'
-    },
-    {
-      id: 'hard',
-      acronym: 'HARD',
-      label: 'Hard',
-      description: 'A more challenging activity'
-    }
+    { id: 'easy', label: 'Easy', tagline: 'Relaxed challenge' },
+    { id: 'normal', label: 'Normal', tagline: 'Balanced challenge' },
+    { id: 'hard', label: 'Hard', tagline: 'More challenging' }
   ];
 
   var DEFAULT_DIFFICULTY = 'normal';
-  var RADIO_NAME = 'difficulty-choice';
 
   function normalize(value) {
+    var v = String(value === undefined || value === null ? '' : value).toLowerCase();
     for (var i = 0; i < LEVELS.length; i++) {
-      if (LEVELS[i].id === value) return value;
+      if (LEVELS[i].id === v) return v;
     }
     return DEFAULT_DIFFICULTY;
   }
 
   function level(id) {
+    var n = normalize(id);
     for (var i = 0; i < LEVELS.length; i++) {
-      if (LEVELS[i].id === id) return LEVELS[i];
+      if (LEVELS[i].id === n) return LEVELS[i];
     }
     return null;
   }
 
-  function escapeHtml(text) {
-    return String(text)
+  function escapeHtml(value) {
+    return String(value)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -48,95 +34,166 @@
       .replace(/'/g, '&#39;');
   }
 
-  function cardMarkup(lvl, description) {
-    return '' +
-      '<label class="group relative flex w-full cursor-pointer select-none">' +
-        '<input type="radio" name="' + RADIO_NAME + '" value="' + lvl.id + '" class="peer sr-only">' +
-        '<span class="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-emerald-600 px-3 py-1 text-sm font-bold text-white opacity-0 transition-opacity duration-150 peer-checked:opacity-100">Selected</span>' +
-        '<span class="flex w-full items-center gap-4 rounded-2xl border-2 border-slate-200 bg-white p-4 pr-28 text-left transition-colors duration-150 peer-checked:border-emerald-600 peer-checked:bg-emerald-50 peer-checked:shadow-md peer-focus-visible:border-emerald-600 peer-focus-visible:ring-4 peer-focus-visible:ring-emerald-300 hover:border-slate-300">' +
-          '<span class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-slate-400 text-xs font-extrabold tracking-wide text-white transition-colors duration-150 group-hover:bg-slate-500">' + lvl.acronym + '</span>' +
-          '<span>' +
-            '<span class="block text-xl font-bold text-slate-900">' + lvl.label + '</span>' +
-            '<span class="block text-sm sm:text-base text-slate-600">' + escapeHtml(description) + '</span>' +
-          '</span>' +
-        '</span>' +
-      '</label>';
-  }
+  var CHECK_SVG =
+    '<svg class="difficulty-option-check" viewBox="0 0 20 20" fill="none" aria-hidden="true">' +
+    '<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 10.5l4 4 8-8"></path>' +
+    '</svg>';
 
   function buildScreen(container, options) {
     options = options || {};
     var descriptions = options.descriptions || {};
-    var title = options.title || 'Memory Activity';
-    var kicker = options.kicker || 'Daily brain activity';
-    var subtitle = options.subtitle || 'First, choose how challenging today\u2019s activity should be, then press Start when you are ready.';
-
-    var cards = '';
+    var levels = [];
     for (var i = 0; i < LEVELS.length; i++) {
-      cards += cardMarkup(LEVELS[i], descriptions[LEVELS[i].id] || LEVELS[i].description);
+      levels.push({
+        id: LEVELS[i].id,
+        label: LEVELS[i].label,
+        tagline: descriptions[LEVELS[i].id] || LEVELS[i].tagline
+      });
     }
 
-    container.innerHTML = '' +
-      '<section id="difficultyScreen" class="flex w-full flex-col items-center gap-8 py-4 sm:py-6">' +
-        '<header class="text-center">' +
-          '<p class="text-xs font-bold uppercase tracking-widest text-emerald-600 sm:text-sm">' + escapeHtml(kicker) + '</p>' +
-          '<h1 id="difficulty-title" class="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">' + escapeHtml(title) + '</h1>' +
-          '<p class="mx-auto mt-3 max-w-xl text-base text-slate-600 sm:text-lg">' + escapeHtml(subtitle) + '</p>' +
-        '</header>' +
+    var title = options.title || 'Choose Your Difficulty';
+    var intro = options.intro || 'Select how challenging you want today\u2019s activity to be. You can change it at any time.';
+    var eyebrow = options.eyebrow || '';
+    var startLabel = options.startLabel || 'Start Game';
+    var backLabel = options.backLabel || 'Back';
+    var onStart = typeof options.onStart === 'function' ? options.onStart : null;
+    var onBack = typeof options.onBack === 'function' ? options.onBack : null;
+    var initial = normalize(options.initial || DEFAULT_DIFFICULTY);
 
-        '<fieldset id="difficultyFieldset" class="m-0 w-full max-w-xl p-0" role="radiogroup" aria-labelledby="difficulty-heading">' +
-          '<legend id="difficulty-heading" class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">Choose your difficulty</legend>' +
-          '<div class="flex flex-col gap-4">' + cards + '</div>' +
-        '</fieldset>' +
+    var uid = 'gd-' + Math.random().toString(36).slice(2, 9);
+    var titleId = uid + '-title';
 
-        '<div class="flex flex-wrap items-center justify-center gap-4">' +
-          '<button type="button" id="difficulty-back" class="rounded-full bg-white px-8 py-4 text-lg font-semibold text-slate-700 ring-1 ring-slate-300 transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2 active:scale-95">Back</button>' +
-          '<button type="button" id="difficulty-start" class="rounded-full bg-emerald-600 px-12 py-4 text-lg font-bold text-white transition hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:active:scale-100" disabled>Start Game</button>' +
+    var optionsHtml = '';
+    levels.forEach(function (lv) {
+      optionsHtml +=
+        '<button type="button" role="radio" aria-checked="false" class="difficulty-option" data-difficulty="' +
+          escapeHtml(lv.id) + '" tabindex="-1">' +
+          '<span class="difficulty-option-indicator" aria-hidden="true">' + CHECK_SVG + '</span>' +
+          '<span class="difficulty-option-text">' +
+            '<span class="difficulty-option-label">' + escapeHtml(lv.label) + '</span>' +
+            '<span class="difficulty-option-tagline">' + escapeHtml(lv.tagline) + '</span>' +
+          '</span>' +
+        '</button>';
+    });
+
+    var html =
+      '<div class="difficulty-screen is-hidden" role="dialog" aria-modal="true" aria-labelledby="' + titleId + '">' +
+        '<div class="difficulty-panel">' +
+          (eyebrow ? '<p class="difficulty-eyebrow">' + escapeHtml(eyebrow) + '</p>' : '') +
+          '<h2 class="difficulty-title" id="' + titleId + '">' + escapeHtml(title) + '</h2>' +
+          '<p class="difficulty-intro">' + escapeHtml(intro) + '</p>' +
+          '<div class="difficulty-options" role="radiogroup" aria-labelledby="' + titleId + '">' +
+            optionsHtml +
+          '</div>' +
+          '<button type="button" class="difficulty-start" disabled>' + escapeHtml(startLabel) + '</button>' +
+          '<button type="button" class="difficulty-back">' + escapeHtml(backLabel) + '</button>' +
         '</div>' +
-      '</section>';
+      '</div>';
 
-    var fieldset = container.querySelector('#difficultyFieldset');
-    var startBtn = container.querySelector('#difficulty-start');
-    var backBtn = container.querySelector('#difficulty-back');
-    var selected = null;
+    container.innerHTML = html;
+    var screen = container.firstElementChild;
+    var startBtn = screen.querySelector('.difficulty-start');
+    var backBtn = screen.querySelector('.difficulty-back');
+    var group = screen.querySelector('.difficulty-options');
+    var optionEls = Array.prototype.slice.call(screen.querySelectorAll('.difficulty-option'));
 
-    function readSelected() {
-      var checked = fieldset.querySelector('input[type="radio"]:checked');
-      return checked ? checked.value : null;
+    var selectedIndex = -1;
+
+    function select(index, doFocus) {
+      index = Math.max(0, Math.min(optionEls.length - 1, index));
+      if (index === selectedIndex) {
+        if (doFocus && optionEls[index]) optionEls[index].focus();
+        return;
+      }
+      selectedIndex = index;
+      optionEls.forEach(function (el, i) {
+        var isSelected = i === selectedIndex;
+        el.classList.toggle('is-selected', isSelected);
+        el.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+        el.tabIndex = isSelected ? 0 : -1;
+      });
+      if (doFocus && optionEls[index]) optionEls[index].focus();
+      startBtn.disabled = selectedIndex === -1;
     }
 
-    fieldset.addEventListener('change', function () {
-      selected = readSelected();
-      startBtn.disabled = !selected;
+    function focusSelected() {
+      if (selectedIndex !== -1 && optionEls[selectedIndex]) optionEls[selectedIndex].focus();
+    }
+
+    // Roving tabindex + arrow-key navigation (ARIA radiogroup pattern).
+    group.addEventListener('keydown', function (event) {
+      var keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+      if (keys.indexOf(event.key) === -1) return;
+      event.preventDefault();
+      var next = selectedIndex;
+      if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') next -= 1;
+      else if (event.key === 'ArrowDown' || event.key === 'ArrowRight') next += 1;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = optionEls.length - 1;
+      select(next, true);
+    });
+
+    optionEls.forEach(function (el, i) {
+      el.addEventListener('click', function () {
+        select(i, true);
+      });
     });
 
     startBtn.addEventListener('click', function () {
-      if (!selected) return;
-      options.onStart && options.onStart(normalize(selected));
+      if (startBtn.disabled || !onStart) return;
+      onStart(levels[selectedIndex].id);
     });
 
     backBtn.addEventListener('click', function () {
-      options.onBack && options.onBack();
+      if (onBack) onBack();
     });
 
+    // Pre-select the requested level (defaults to "normal") so Start is ready.
+    var initialIndex = 0;
+    for (var k = 0; k < levels.length; k++) {
+      if (levels[k].id === initial) {
+        initialIndex = k;
+        break;
+      }
+    }
+    select(initialIndex, false);
+
     return {
-      setValue: function (value) {
-        var id = normalize(value);
-        var radio = fieldset.querySelector('input[value="' + id + '"]');
-        if (radio) {
-          radio.checked = true;
-          selected = id;
-          startBtn.disabled = false;
+      show: function () {
+        screen.classList.remove('is-hidden');
+        focusSelected();
+      },
+      hide: function () {
+        screen.classList.add('is-hidden');
+      },
+      setValue: function (id) {
+        var target = normalize(id);
+        var index = 0;
+        for (var j = 0; j < levels.length; j++) {
+          if (levels[j].id === target) {
+            index = j;
+            break;
+          }
         }
+        select(index, false);
       },
       getValue: function () {
-        return normalize(selected || DEFAULT_DIFFICULTY);
+        return selectedIndex === -1 ? DEFAULT_DIFFICULTY : levels[selectedIndex].id;
       },
       reset: function () {
-        fieldset.querySelectorAll('input[type="radio"]').forEach(function (radio) {
-          radio.checked = false;
+        optionEls.forEach(function (el) {
+          el.classList.remove('is-selected');
+          el.setAttribute('aria-checked', 'false');
+          el.tabIndex = -1;
         });
-        selected = null;
+        selectedIndex = -1;
         startBtn.disabled = true;
+      },
+      isVisible: function () {
+        return !screen.classList.contains('is-hidden');
+      },
+      destroy: function () {
+        if (screen.parentNode) screen.parentNode.removeChild(screen);
       }
     };
   }

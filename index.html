@@ -91,7 +91,7 @@
       <header class="text-center">
         <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Find the Difference</h1>
         <p class="mt-2 text-sm sm:text-base text-slate-500 max-w-xl">
-          Look closely at the two pictures and find all <span id="totalHint" class="font-semibold text-slate-700">6</span> differences.
+          Look closely at <span id="sceneName" class="font-semibold text-slate-700">the two pictures</span> and find all <span id="totalHint" class="font-semibold text-slate-700">4</span> differences.
           Tap a difference on either picture to mark it.
         </p>
       </header>
@@ -101,8 +101,8 @@
           <div class="flex items-baseline gap-1 font-semibold whitespace-nowrap">
             <span id="foundCount" class="text-2xl text-emerald-600">0</span>
             <span class="text-lg text-slate-400">/</span>
-            <span id="totalCount" class="text-2xl text-slate-700">6</span>
-            <span class="ml-1 text-sm text-slate-500">found</span>
+            <span id="totalCount" class="text-2xl text-slate-700">4</span>
+            <span class="ml-1 text-sm text-slate-500">Differences Found</span>
           </div>
 
           <div class="flex-1 min-w-[120px] h-3 rounded-full bg-slate-200 overflow-hidden" aria-hidden="true">
@@ -115,6 +115,10 @@
 
           <div class="rounded-full bg-slate-100 ring-1 ring-slate-200 px-3 py-1 text-sm font-semibold text-slate-600 whitespace-nowrap">
             Level: <span id="difficultyBadge" class="inline-block font-bold text-slate-900">Normal</span>
+          </div>
+
+          <div class="rounded-full bg-slate-100 ring-1 ring-slate-200 px-3 py-1 text-sm font-semibold text-slate-600 whitespace-nowrap">
+            Scene: <span id="sceneBadge" class="inline-block font-bold text-slate-900">1 / 8</span>
           </div>
 
           <button id="changeDifficultyBtn" type="button"

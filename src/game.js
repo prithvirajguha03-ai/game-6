@@ -7,92 +7,123 @@
     hard:   { label: 'Hard',   radiusScale: 0.72 }
   };
 
+  function circleAt(x, y, r) {
+    return { kind: 'circle', x: x, y: y, r: r };
+  }
+
+  function rectAt(x, y, w, h) {
+    return { kind: 'rect', x: x, y: y, w: w, h: h };
+  }
+
+  function polyAt(points) {
+    return { kind: 'poly', points: points };
+  }
+
+  function ellipsePolyAt(cx, cy, rx, ry, deg, steps) {
+    var pts = [];
+    var a = (deg * Math.PI) / 180;
+    var cosA = Math.cos(a);
+    var sinA = Math.sin(a);
+    var n = steps || 20;
+    for (var i = 0; i < n; i++) {
+      var t = (i / n) * Math.PI * 2;
+      var x = Math.cos(t) * rx;
+      var y = Math.sin(t) * ry;
+      pts.push([cx + x * cosA - y * sinA, cy + x * sinA + y * cosA]);
+    }
+    return polyAt(pts);
+  }
+
   var ROUNDS = [
     {
       id: 'beach',
       name: 'Beach Day',
       differences: [
-        { label: 'A seagull in the sky', x: 72, y: 54, r: 18 },
-        { label: 'The beach ball colors', x: 48, y: 165, r: 17 },
-        { label: 'A starfish on the sand', x: 98, y: 178, r: 16 },
-        { label: 'The sailboat sail', x: 150, y: 116, r: 24 }
+        { label: 'A seagull in the sky', a: rectAt(57, 50, 30, 8) },
+        { label: 'The beach ball colors', a: circleAt(48, 167, 12.5) },
+        { label: 'A starfish on the sand', a: circleAt(98, 178, 13.5) },
+        { label: 'The sailboat sail', a: polyAt([[149, 98], [171, 120], [129, 120]]) }
       ]
     },
     {
       id: 'street',
       name: 'Cozy Street',
       differences: [
-        { label: 'The roof color', x: 135, y: 76, r: 26 },
-        { label: 'A cat by the door', x: 150, y: 143, r: 15 },
-        { label: 'The chimney', x: 106, y: 64, r: 15 },
-        { label: 'The dog', x: 56, y: 163, r: 15, bx: 230, by: 165, br: 15 },
-        { label: 'A window crossbar', x: 167, y: 107, r: 13 }
+        { label: 'The roof color', a: polyAt([[70, 92], [135, 52], [200, 92]]) },
+        { label: 'A cat by the door', a: rectAt(139, 126, 21, 27) },
+        { label: 'The chimney', a: polyAt([[97, 52], [115, 52], [115, 61.8], [97, 72.9]]) },
+        { label: 'The dog', a: rectAt(43, 150, 25, 22), b: rectAt(217, 152, 25, 22) },
+        { label: 'A window crossbar', a: rectAt(161, 99, 18, 18) }
       ]
     },
     {
       id: 'space',
       name: 'Starry Night',
       differences: [
-        { label: 'The moon', x: 240, y: 44, r: 26 },
-        { label: 'A bright star', x: 118, y: 66, r: 14 },
-        { label: 'A shooting star', x: 86, y: 112, r: 15 },
-        { label: 'The planet Saturn', x: 190, y: 130, r: 19 },
-        { label: 'The rocket', x: 60, y: 150, r: 17, bx: 214, by: 150, br: 17 }
+        { label: 'The moon', a: circleAt(240, 44, 20.5) },
+        { label: 'A bright star', a: circleAt(118, 66, 8) },
+        { label: 'A shooting star', a: circleAt(87.5, 110.5, 10.5) },
+        { label: 'The planet Saturn', a: [circleAt(196, 104, 24), ellipsePolyAt(196, 104, 24.5, 8, -18, 24)] },
+        { label: 'The rocket', a: rectAt(37, 91, 21, 26), b: rectAt(140, 67, 20, 25) }
       ]
     },
     {
       id: 'garden',
       name: 'Garden Blooms',
       differences: [
-        { label: 'The flower color', x: 150, y: 114, r: 18 },
-        { label: 'A leaf on the stem', x: 227, y: 134, r: 13 },
-        { label: 'The butterfly', x: 60, y: 82, r: 16, bx: 236, by: 92, br: 16 },
-        { label: 'A little bird', x: 142, y: 66, r: 15 },
-        { label: 'The petal size', x: 70, y: 122, r: 18 }
+        { label: 'The flower color', a: circleAt(150, 116, 12) },
+        { label: 'A leaf on the stem', a: circleAt(221, 133, 6.5) },
+        { label: 'The butterfly', a: rectAt(43, 73, 34, 20), b: rectAt(219, 83, 34, 20) },
+        { label: 'A little bird', a: rectAt(132, 56, 21, 22) },
+        { label: 'The petal size', a: circleAt(70, 126, 13) }
       ]
     },
     {
       id: 'park',
       name: 'Park Fun',
       differences: [
-        { label: 'The swing seat color', x: 100, y: 114, r: 15 },
-        { label: 'The fountain shape', x: 150, y: 148, r: 20 },
-        { label: 'The kite', x: 206, y: 84, r: 17, bx: 252, by: 56, br: 17 },
-        { label: 'A park bench', x: 196, y: 155, r: 18 },
-        { label: 'A cloud in the sky', x: 60, y: 46, r: 18 }
+        { label: 'The swing seat color', a: rectAt(83, 111, 34, 7) },
+        { label: 'The fountain shape', a: rectAt(129, 128, 42, 30) },
+        {
+          label: 'The kite',
+          a: [polyAt([[206, 70], [216, 84], [206, 98], [196, 84]]), rectAt(202, 97, 9, 23)],
+          b: [polyAt([[252, 42], [262, 56], [252, 70], [242, 56]]), rectAt(248, 69, 9, 23)]
+        },
+        { label: 'A park bench', a: rectAt(179, 145, 36, 21) },
+        { label: 'A cloud in the sky', a: rectAt(42, 32, 36, 24) }
       ]
     },
     {
       id: 'market',
       name: 'Market Stall',
       differences: [
-        { label: 'A missing awning stripe', x: 184, y: 58, r: 17 },
-        { label: 'The crate size', x: 63, y: 179, r: 18 },
-        { label: 'The potted plant', x: 100, y: 166, r: 17, bx: 252, by: 168, br: 17 },
-        { label: 'A little dog', x: 32, y: 175, r: 14 },
-        { label: 'The apples color', x: 170, y: 111, r: 18 }
+        { label: 'A missing awning stripe', a: rectAt(167, 45, 34, 37) },
+        { label: 'The crate size', a: rectAt(49, 167, 28, 24) },
+        { label: 'The potted plant', a: rectAt(87, 140, 28, 40), b: rectAt(239, 142, 28, 38) },
+        { label: 'A little dog', a: rectAt(18, 165, 26, 23) },
+        { label: 'The apples color', a: rectAt(157, 102, 30, 17) }
       ]
     },
     {
       id: 'farm',
       name: 'Sunny Farm',
       differences: [
-        { label: 'The barn door color', x: 96, y: 122, r: 18 },
-        { label: 'The lamb', x: 60, y: 166, r: 20, bx: 206, by: 166, br: 20 },
-        { label: 'The windmill blades', x: 252, y: 80, r: 23 },
-        { label: 'A tractor', x: 150, y: 166, r: 21 },
-        { label: 'The tree shape', x: 32, y: 112, r: 22 }
+        { label: 'The barn door color', a: rectAt(85, 103, 22, 48) },
+        { label: 'The lamb', a: rectAt(45, 152, 27, 26), b: rectAt(191, 152, 27, 26) },
+        { label: 'The windmill blades', a: circleAt(252, 80, 24) },
+        { label: 'A tractor', a: rectAt(134, 159, 30, 27) },
+        { label: 'The tree shape', a: rectAt(9, 77, 47, 64) }
       ]
     },
     {
       id: 'camp',
       name: 'Camp Out',
       differences: [
-        { label: 'The tent size', x: 96, y: 108, r: 22 },
-        { label: 'The campfire smoke', x: 186, y: 92, r: 16 },
-        { label: 'A hanging lantern', x: 266, y: 100, r: 15 },
-        { label: 'The backpack', x: 120, y: 170, r: 15, bx: 244, by: 172, br: 15 },
-        { label: 'The owl\u2019s eye', x: 250, y: 116, r: 18 }
+        { label: 'The tent size', a: polyAt([[58, 176], [94, 84], [130, 176]]), b: polyAt([[70, 176], [94, 110], [118, 176]]) },
+        { label: 'The campfire smoke', a: rectAt(181, 105, 13, 40) },
+        { label: 'A hanging lantern', a: rectAt(265, 116, 14, 28) },
+        { label: 'The backpack', a: rectAt(139, 159, 22, 20), b: rectAt(233, 161, 22, 20) },
+        { label: 'The owl\u2019s eye', a: circleAt(250, 113, 8.5) }
       ]
     }
   ];
@@ -122,6 +153,7 @@
 
   var difficulty = 'normal';
   var radiusScale = 1;
+  var HIT_GROW = 1.5;
   var current = 0;
   var round = ROUNDS[0];
 
@@ -312,45 +344,138 @@
       '<circle cx="' + X + '" cy="' + Y + '" r="1.6" fill="#c2540e"/>';
   }
 
-  function geomFor(variant, diff) {
-    if (variant === 'B' && diff.bx !== undefined && diff.bx !== null) {
-      return diff.bw
-        ? { x: diff.bx, y: diff.by, w: diff.bw, h: diff.bh }
-        : { x: diff.bx, y: diff.by, r: diff.br * radiusScale };
+  function shapeBox(s) {
+    if (s.kind === 'circle') return { x: s.x - s.r, y: s.y - s.r, w: s.r * 2, h: s.r * 2 };
+    if (s.kind === 'rect') return { x: s.x, y: s.y, w: s.w, h: s.h };
+    var pts = s.points;
+    var minX = pts[0][0], maxX = pts[0][0], minY = pts[0][1], maxY = pts[0][1];
+    for (var i = 1; i < pts.length; i++) {
+      if (pts[i][0] < minX) minX = pts[i][0];
+      if (pts[i][0] > maxX) maxX = pts[i][0];
+      if (pts[i][1] < minY) minY = pts[i][1];
+      if (pts[i][1] > maxY) maxY = pts[i][1];
     }
-    return diff.w
-      ? { x: diff.x, y: diff.y, w: diff.w, h: diff.h }
-      : { x: diff.x, y: diff.y, r: diff.r * radiusScale };
+    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+  }
+
+  function scaleShape(s, k) {
+    if (k === 1) return s;
+    if (s.kind === 'circle') return circleAt(s.x, s.y, s.r * k);
+    var box = shapeBox(s);
+    var cx = box.x + box.w / 2;
+    var cy = box.y + box.h / 2;
+    if (s.kind === 'rect') {
+      return rectAt(cx - box.w * k / 2, cy - box.h * k / 2, box.w * k, box.h * k);
+    }
+    var out = [];
+    for (var i = 0; i < s.points.length; i++) {
+      out.push([cx + (s.points[i][0] - cx) * k, cy + (s.points[i][1] - cy) * k]);
+    }
+    return polyAt(out);
+  }
+
+  function baseShapes(variant, diff) {
+    var src = (variant === 'B' && diff.b) ? diff.b : diff.a;
+    if (!src) return [];
+    if (Object.prototype.toString.call(src) === '[object Array]') return src;
+    return [src];
+  }
+
+  function shapesFor(variant, diff) {
+    var list = baseShapes(variant, diff);
+    if (radiusScale === 1) return list;
+    var out = [];
+    for (var i = 0; i < list.length; i++) out.push(scaleShape(list[i], radiusScale));
+    return out;
+  }
+
+  function growShape(s, d) {
+    if (d <= 0) return s;
+    if (s.kind === 'circle') return circleAt(s.x, s.y, s.r + d);
+    if (s.kind === 'rect') return rectAt(s.x - d, s.y - d, s.w + d * 2, s.h + d * 2);
+    var box = shapeBox(s);
+    var cx = box.x + box.w / 2;
+    var cy = box.y + box.h / 2;
+    var pts = s.points;
+    var n = pts.length;
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      var prev = pts[(i - 1 + n) % n];
+      var cur = pts[i];
+      var next = pts[(i + 1) % n];
+      var n1 = edgeNormal(prev, cur, cx, cy);
+      var n2 = edgeNormal(cur, next, cx, cy);
+      if (!n1) { out.push([cur[0], cur[1]]); continue; }
+      if (!n2) { out.push([cur[0] + n1[0] * d, cur[1] + n1[1] * d]); continue; }
+      var dot = n1[0] * n2[0] + n1[1] * n2[1];
+      var denom = 1 + dot;
+      if (denom < 0.3) denom = 0.3;
+      out.push([cur[0] + (d * (n1[0] + n2[0])) / denom, cur[1] + (d * (n1[1] + n2[1])) / denom]);
+    }
+    return polyAt(out);
+  }
+
+  function edgeNormal(a, b, cx, cy) {
+    var ex = b[0] - a[0];
+    var ey = b[1] - a[1];
+    var len = Math.sqrt(ex * ex + ey * ey);
+    if (!len) return null;
+    var nx = -ey / len;
+    var ny = ex / len;
+    var mx = (a[0] + b[0]) / 2 - cx;
+    var my = (a[1] + b[1]) / 2 - cy;
+    if (nx * mx + ny * my < 0) { nx = -nx; ny = -ny; }
+    return [nx, ny];
+  }
+
+  function shapeEl(s, attrs) {
+    if (s.kind === 'circle') {
+      return '<circle cx="' + fmt(s.x) + '" cy="' + fmt(s.y) + '" r="' + fmt(s.r) + '"' + attrs + '/>';
+    }
+    if (s.kind === 'rect') {
+      return '<rect x="' + fmt(s.x) + '" y="' + fmt(s.y) + '" width="' + fmt(s.w) +
+        '" height="' + fmt(s.h) + '"' + attrs + '/>';
+    }
+    var pts = [];
+    for (var i = 0; i < s.points.length; i++) pts.push(fmt(s.points[i][0]) + ',' + fmt(s.points[i][1]));
+    return '<polygon points="' + pts.join(' ') + '"' + attrs + '/>';
   }
 
   function hotspotMarkup(variant, diff, i) {
-    var g = geomFor(variant, diff);
-    var shape = g.w
-      ? '<rect x="' + g.x + '" y="' + g.y + '" width="' + g.w + '" height="' + g.h + '" rx="5"/>'
-      : '<circle cx="' + g.x + '" cy="' + g.y + '" r="' + g.r + '"/>';
+    var shapes = shapesFor(variant, diff);
+    var inner = '';
+    for (var k = 0; k < shapes.length; k++) inner += shapeEl(growShape(shapes[k], HIT_GROW), '');
     return '<g class="hotspot" data-id="' + i + '" role="button" tabindex="0"' +
       ' aria-label="Difference ' + (i + 1) + ': ' + diff.label + '"' +
-      ' title="Difference ' + (i + 1) + ': ' + diff.label + '">' + shape + '</g>';
+      ' title="Difference ' + (i + 1) + ': ' + diff.label + '">' + inner + '</g>';
+  }
+
+  function markerShapeEl(s, attrs) {
+    if (s.kind === 'rect') return shapeEl(rectAt(s.x + 1, s.y + 1, s.w - 2, s.h - 2), attrs + ' rx="6"');
+    return shapeEl(s, attrs);
   }
 
   function markerMarkup(variant, diff, i) {
-    var g = geomFor(variant, diff);
-    var ring;
-    var bx;
-    var by;
-    if (g.w) {
-      bx = g.x + g.w + 7;
-      by = g.y + g.h / 2;
-      ring = '<rect x="' + (g.x + 1) + '" y="' + (g.y + 1) + '" width="' + (g.w - 2) + '" height="' + (g.h - 2) + '" rx="6" fill="rgba(16,185,129,0.18)" stroke="#10b981" stroke-width="3"/>';
-    } else {
-      bx = g.x + g.r * 0.75;
-      by = g.y + g.r * 0.75;
-      ring = '<circle cx="' + g.x + '" cy="' + g.y + '" r="' + g.r + '" fill="rgba(16,185,129,0.18)" stroke="#10b981" stroke-width="3"/>';
+    var shapes = shapesFor(variant, diff);
+    if (!shapes.length) return '';
+
+    var fillAttrs = ' fill="rgba(16,185,129,0.18)" stroke="#10b981" stroke-width="3"';
+    var lineAttrs = ' fill="none" stroke="#10b981" stroke-width="3"';
+    var rings = '';
+    for (var k = 0; k < shapes.length; k++) {
+      if (k === 0) rings += markerShapeEl(shapes[k], fillAttrs);
+      else rings += shapeEl(shapes[k], lineAttrs);
     }
+
+    var main = shapes[0];
+    var box = shapeBox(main);
+    var bx = main.kind === 'circle' ? main.x + main.r * 0.75 : box.x + box.w + 7;
+    var by = main.kind === 'circle' ? main.y + main.r * 0.75 : box.y + box.h / 2;
+
     return '<g class="marker js-marker" data-id="' + i + '">' +
-      ring +
-      '<circle cx="' + bx + '" cy="' + by + '" r="8.5" fill="#10b981"/>' +
-      '<text x="' + bx + '" y="' + by + '" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-size="12" font-weight="700">' + (i + 1) + '</text>' +
+      rings +
+      '<circle cx="' + fmt(bx) + '" cy="' + fmt(by) + '" r="8.5" fill="#10b981"/>' +
+      '<text x="' + fmt(bx) + '" y="' + fmt(by) + '" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-size="12" font-weight="700">' + (i + 1) + '</text>' +
     '</g>';
   }
 
@@ -396,14 +521,14 @@
         '<line x1="0" y1="156" x2="300" y2="156" stroke="#e7d3a8" stroke-width="2"/>' +
         (!isA ? starfishMarkup(98, 178) : '') +
         '<g>' +
-          '<circle cx="48" cy="165" r="11" fill="#ffffff"/>' +
-          '<path d="M37 165 A11 11 0 0 1 59 165 Z" fill="' + ballColor + '"/>' +
-          '<circle cx="48" cy="165" r="3.4" fill="#ffffff"/>' +
-          '<circle cx="44" cy="160" r="1.8" fill="#ffffff" opacity="0.9"/>' +
+          '<circle cx="48" cy="167" r="11" fill="#ffffff"/>' +
+          '<path d="M37 167 A11 11 0 0 1 59 167 Z" fill="' + ballColor + '"/>' +
+          '<circle cx="48" cy="167" r="3.4" fill="#ffffff"/>' +
+          '<circle cx="44" cy="162" r="1.8" fill="#ffffff" opacity="0.9"/>' +
         '</g>' +
         '<path d="M266 158 Q264 178 268 199" fill="none" stroke="#c9883f" stroke-width="7" stroke-linecap="round"/>' +
         '<path d="M266 160 Q244 142 230 148 Q246 154 266 164 Z" fill="#2f9e44"/>' +
-        '<path d="M266 160 Q288 142 302 148 Q288 154 266 164 Z" fill="#2f9e44"/>' +
+        '<path d="M266 160 Q284 142 296 148 Q284 154 266 164 Z" fill="#2f9e44"/>' +
         '<path d="M266 155 Q254 128 250 112 Q260 128 268 156 Z" fill="#37b24d"/>' +
         '<path d="M266 155 Q278 126 284 110 Q276 128 267 157 Z" fill="#37b24d"/>' +
         '<path d="M268 164 Q258 176 252 190 Q264 176 270 162 Z" fill="#2f9e44"/>' +
@@ -442,9 +567,9 @@
         (!isA ? catMarkup(150, 143) : '') +
         '<g>' + dogMarkup(isA ? 56 : 230, isA ? 163 : 165) + '</g>' +
         '<g>' +
-          '<circle cx="216" cy="152" r="9" fill="#2e7d32"/>' +
-          '<circle cx="228" cy="147" r="12" fill="#388e3c"/>' +
-          '<circle cx="239" cy="153" r="9" fill="#2e7d32"/>' +
+          '<circle cx="256" cy="152" r="9" fill="#2e7d32"/>' +
+          '<circle cx="268" cy="147" r="12" fill="#388e3c"/>' +
+          '<circle cx="279" cy="153" r="9" fill="#2e7d32"/>' +
         '</g>';
     }
 
@@ -458,7 +583,7 @@
         ? '<circle cx="240" cy="44" r="20" fill="#fef3c7"/><circle cx="233" cy="40" r="20" fill="#25225e"/>'
         : '<circle cx="240" cy="44" r="20" fill="#fef3c7"/><circle cx="233" cy="39" r="3" fill="#fde68a" opacity="0.8"/><circle cx="247" cy="49" r="2.4" fill="#fde68a" opacity="0.8"/>';
       var bigStar = isA ? starPts(118, 66, 5, 2.2) : starPts(118, 66, 7.6, 3.3);
-      var rocketPos = isA ? 'translate(60,150)' : 'translate(214,150)';
+      var rocketPos = isA ? 'translate(48,100)' : 'translate(150,76)';
 
       body =
         '<defs>' + grad('skyGrad-' + id + '-' + variant, '#1e1b4b', '#312e81') + '</defs>' +
@@ -472,8 +597,8 @@
             '<line x1="90" y1="108" x2="86" y2="112" stroke="#e2e8f0" stroke-width="1" stroke-linecap="round"/>'
           : '') +
         (isA
-          ? '<circle cx="190" cy="130" r="13" fill="#f59e0b"/><circle cx="186" cy="125" r="3" fill="#d97706" opacity="0.8"/>' +
-            '<ellipse cx="190" cy="130" rx="23" ry="6.5" fill="none" stroke="#fde68a" stroke-width="2.5" transform="rotate(-18 190 130)"/>'
+          ? '<circle cx="196" cy="104" r="13" fill="#f59e0b"/><circle cx="192" cy="99" r="3" fill="#d97706" opacity="0.8"/>' +
+            '<ellipse cx="196" cy="104" rx="23" ry="6.5" fill="none" stroke="#fde68a" stroke-width="2.5" transform="rotate(-18 196 104)"/>'
           : '') +
         '<g transform="' + rocketPos + '">' +
           '<path d="M0 -8 L5 0 L-5 0 Z" fill="#ef4444"/>' +
@@ -508,27 +633,28 @@
           '<rect x="-2" y="-8" width="4" height="12" rx="2" fill="#475569"/>' +
         '</g>' +
         (!isA ? birdMarkup(142, 66) : '') +
-        '<g>' +
+        '<g transform="translate(196,102)">' +
           '<ellipse cx="-1" cy="0" rx="4" ry="3" fill="#2b3440"/>' +
           '<ellipse cx="-2" cy="-2" rx="3.4" ry="2.2" fill="#e2e8f0" opacity="0.85"/>' +
           '<ellipse cx="2.6" cy="-2" rx="3.4" ry="2.2" fill="#e2e8f0" opacity="0.85"/>' +
         '</g>' +
         '<g>' +
-          '<line x1="70" y1="150" x2="70" y2="130" stroke="#2e7d32" stroke-width="2"/>' +
+          '<line x1="70" y1="161" x2="70" y2="130" stroke="#2e7d32" stroke-width="2"/>' +
           '<path d="M70 142 Q63 140 61 134" stroke="#2e7d32" fill="none" stroke-width="2"/>' +
           petalsMarkup(70, 126, petalR, '#f472b6') +
         '</g>' +
         '<g>' +
-          '<line x1="150" y1="150" x2="150" y2="128" stroke="#2e7d32" stroke-width="2"/>' +
+          '<line x1="150" y1="161" x2="150" y2="128" stroke="#2e7d32" stroke-width="2"/>' +
           '<path d="M150 140 Q157 138 160 133" stroke="#2e7d32" fill="none" stroke-width="2"/>' +
           petalsMarkup(150, 116, 5, flowerColor) +
         '</g>' +
         '<g>' +
-          '<line x1="230" y1="148" x2="230" y2="126" stroke="#2e7d32" stroke-width="2"/>' +
+          '<line x1="230" y1="162" x2="230" y2="126" stroke="#2e7d32" stroke-width="2"/>' +
           (isA ? '<ellipse cx="221" cy="133" rx="4.2" ry="2.2" fill="#2e7d32" transform="rotate(-35 221 133)"/>' : '') +
           petalsMarkup(230, 122, 5, '#2a9d8f') +
         '</g>' +
         '<g>' +
+          '<rect x="250" y="134" width="6" height="28" fill="#7c4a23"/>' +
           '<rect x="246" y="122" width="14" height="14" rx="2" fill="#a3b18a"/>' +
           '<polygon points="253,112 260,122 246,122" fill="#7c4a23"/>' +
           '<circle cx="253" cy="129" r="2" fill="#3f3a2a"/>' +
@@ -593,7 +719,7 @@
 
     else if (id === 'market') {
       var appleColor = isA ? '#e63946' : '#43a047';
-      var plantPos = isA ? 'translate(100,168)' : 'translate(252,170)';
+      var plantPos = isA ? 'translate(100,170)' : 'translate(252,170)';
       var crateA = isA
         ? '<rect x="50" y="168" width="26" height="22" rx="1.5" fill="#b08968" stroke="#8d6b4e"/>' +
           '<line x1="50" y1="179" x2="76" y2="179" stroke="#8d6b4e" stroke-width="1.5"/>'
@@ -613,10 +739,10 @@
       body =
         '<defs>' + grad('skyGrad-' + id + '-' + variant, '#f6ead4', '#f6ead4') + '</defs>' +
         '<rect x="0" y="0" width="300" height="300" fill="#f6ead4"/>' +
+        '<rect x="0" y="72" width="300" height="96" fill="#f6ead4"/>' +
         '<rect x="30" y="42" width="240" height="6" fill="#d98f6f"/>' +
         '<rect x="30" y="46" width="240" height="26" fill="#faf3e4"/>' +
         stripes +
-        '<rect x="0" y="72" width="300" height="96" fill="#f6ead4"/>' +
         '<rect x="120" y="118" width="96" height="50" fill="#e0c29a"/>' +
         '<rect x="120" y="112" width="96" height="8" rx="2" fill="#caa678"/>' +
         '<g>' +
@@ -644,8 +770,8 @@
             '<rect x="0" y="3" width="2.6" height="5" rx="1" fill="#a06b36"/>' +
           '</g>'
           : '') +
-        '<rect x="40" y="78" width="56" height="20" rx="4" fill="#f8fafc" stroke="#94a3b8"/>' +
-        '<text x="68" y="92" text-anchor="middle" font-size="9" font-weight="700" fill="#475569" font-family="ui-monospace,monospace">FRESH</text>';
+        '<rect x="40" y="82" width="56" height="20" rx="4" fill="#f8fafc" stroke="#94a3b8"/>' +
+        '<text x="68" y="96" text-anchor="middle" font-size="9" font-weight="700" fill="#475569" font-family="ui-monospace,monospace">FRESH</text>';
     }
 
     else if (id === 'farm') {
@@ -674,10 +800,10 @@
           '<circle cx="102" cy="127" r="1.6" fill="#ffd23b"/>' +
         '</g>' +
         '<g stroke="#a16207" fill="none">' +
-          '<rect x="8" y="140" width="4" height="20" fill="#a16207" stroke="none"/>' +
-          '<rect x="28" y="140" width="4" height="20" fill="#a16207" stroke="none"/>' +
-          '<line x1="6" y1="146" x2="34" y2="146" stroke="#a16207" stroke-width="2"/>' +
-          '<line x1="6" y1="154" x2="34" y2="154" stroke="#a16207" stroke-width="2"/>' +
+          '<rect x="2" y="140" width="4" height="20" fill="#a16207" stroke="none"/>' +
+          '<rect x="20" y="140" width="4" height="20" fill="#a16207" stroke="none"/>' +
+          '<line x1="0" y1="146" x2="27" y2="146" stroke="#a16207" stroke-width="2"/>' +
+          '<line x1="0" y1="154" x2="27" y2="154" stroke="#a16207" stroke-width="2"/>' +
           '<rect x="206" y="140" width="4" height="20" fill="#a16207" stroke="none"/>' +
           '<rect x="228" y="140" width="4" height="20" fill="#a16207" stroke="none"/>' +
           '<rect x="250" y="140" width="4" height="20" fill="#a16207" stroke="none"/>' +
@@ -714,7 +840,7 @@
       var tentSide = isA
         ? '<polygon points="58,176 130,176 94,84" fill="#e76f51"/><polygon points="84,176 104,176 94,132" fill="#2b2d42"/>'
         : '<polygon points="70,176 118,176 94,110" fill="#e76f51"/><polygon points="86,176 102,176 94,142" fill="#2b2d42"/>';
-      var backPos = isA ? 'translate(120,170)' : 'translate(244,172)';
+      var backPos = isA ? 'translate(150,170)' : 'translate(244,172)';
 
       body =
         '<defs>' + grad('skyGrad-' + id + '-' + variant, '#3d3a7c', '#d98b78') + '</defs>' +
@@ -739,7 +865,7 @@
           ? '<path d="M186 142 q-5 -10 2 -18 q6 -8 -2 -16" stroke="#cbd5e1" fill="none" stroke-width="3" stroke-linecap="round" opacity="0.7"/>'
           : '') +
         '<g>' +
-          '<rect x="246" y="112" width="10" height="58" fill="#5d4037"/>' +
+          '<rect x="246" y="112" width="10" height="64" fill="#5d4037"/>' +
           '<line x1="238" y1="124" x2="276" y2="114" stroke="#5d4037" stroke-width="5" stroke-linecap="round"/>' +
           '<circle cx="252" cy="90" r="20" fill="#2f6e36"/>' +
           '<circle cx="240" cy="101" r="13" fill="#3f8e44"/>' +
@@ -747,8 +873,8 @@
         '</g>' +
         owlMarkup(250, 118, isA) +
         (!isA
-          ? '<g transform="translate(266,106)">' +
-            '<line x1="0" y1="8" x2="0" y2="-2" stroke="#64748b" stroke-width="1.5"/>' +
+          ? '<g transform="translate(272,132)">' +
+            '<line x1="0" y1="-16" x2="0" y2="-4" stroke="#64748b" stroke-width="1.5"/>' +
             '<rect x="-6" y="-4" width="12" height="15" rx="2" fill="#f59e0b"/>' +
             '<rect x="-3" y="-1" width="6" height="9" fill="#fff7cc"/>' +
             '<rect x="-6" y="-7" width="12" height="4" rx="1.5" fill="#475569"/>' +
